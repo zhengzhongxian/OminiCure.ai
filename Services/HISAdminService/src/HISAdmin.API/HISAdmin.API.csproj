@@ -7,8 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\HISAdmin.Application\HISAdmin.Application.csproj" />
-    <ProjectReference Include="..\HISAdmin.Domain\HISAdmin.Domain.csproj" />
     <ProjectReference Include="..\HISAdmin.Infrastructure\HISAdmin.Infrastructure.csproj" />
   </ItemGroup>
 

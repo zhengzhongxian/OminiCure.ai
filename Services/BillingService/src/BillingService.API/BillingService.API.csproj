@@ -7,8 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\BillingService.Application\BillingService.Application.csproj" />
-    <ProjectReference Include="..\BillingService.Domain\BillingService.Domain.csproj" />
     <ProjectReference Include="..\BillingService.Infrastructure\BillingService.Infrastructure.csproj" />
   </ItemGroup>
 

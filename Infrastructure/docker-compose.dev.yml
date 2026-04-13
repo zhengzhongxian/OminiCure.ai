@@ -41,6 +41,33 @@ services:
     depends_on:
       - kafka
 
+  # MongoDB Replica Set - Primary
+  mongo1:
+    image: mongo:7.0
+    container_name: omnicure-mongo1-dev
+    command: ["--replSet", "rs0", "--bind_ip_all", "--port", "27017"]
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo1_data_dev:/data/db
+      - ../scripts/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js
+    networks:
+      - omnicure-network-dev
+
+  # MongoDB Replica Set - Secondary
+  mongo2:
+    image: mongo:7.0
+    container_name: omnicure-mongo2-dev
+    command: ["--replSet", "rs0", "--bind_ip_all", "--port", "27018"]
+    ports:
+      - "27018:27018"
+    volumes:
+      - mongo2_data_dev:/data/db
+    networks:
+      - omnicure-network-dev
+    depends_on:
+      - mongo1
+
   # Oracle Database
   oracle-db:
     image: container-registry.oracle.com/database/free:latest
@@ -128,6 +155,10 @@ services:
 
 volumes:
   kafka_data_dev:
+    driver: local
+  mongo1_data_dev:
+    driver: local
+  mongo2_data_dev:
     driver: local
   oracle_data_dev:
     driver: local

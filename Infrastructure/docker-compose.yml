@@ -51,6 +51,40 @@ services:
       kafka:
         condition: service_healthy
 
+  # MongoDB Replica Set - Primary
+  mongo1:
+    image: mongo:7.0
+    container_name: omnicure-mongo1
+    command: ["--replSet", "rs0", "--bind_ip_all", "--port", "27017"]
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo1_data:/data/db
+      - ./scripts/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js
+    networks:
+      - omnicure-network
+    restart: unless-stopped
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh --port 27017 --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # MongoDB Replica Set - Secondary
+  mongo2:
+    image: mongo:7.0
+    container_name: omnicure-mongo2
+    command: ["--replSet", "rs0", "--bind_ip_all", "--port", "27018"]
+    ports:
+      - "27018:27018"
+    volumes:
+      - mongo2_data:/data/db
+    networks:
+      - omnicure-network
+    restart: unless-stopped
+    depends_on:
+      - mongo1
+
   # Oracle Database
   oracle-db:
     image: container-registry.oracle.com/database/enterprise:${ORACLE_VERSION}
@@ -185,6 +219,10 @@ services:
 
 volumes:
   kafka_data:
+    driver: local
+  mongo1_data:
+    driver: local
+  mongo2_data:
     driver: local
   oracle_data:
     driver: local
