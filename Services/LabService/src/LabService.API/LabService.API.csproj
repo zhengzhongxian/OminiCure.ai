@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\LabService.Application\LabService.Application.csproj" />
+    <ProjectReference Include="..\LabService.Domain\LabService.Domain.csproj" />
+    <ProjectReference Include="..\LabService.Infrastructure\LabService.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>

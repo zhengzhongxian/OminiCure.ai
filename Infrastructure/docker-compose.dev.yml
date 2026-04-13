@@ -1,0 +1,142 @@
+version: '3.8'
+
+name: omnicure-infra-dev
+
+services:
+  # Kafka
+  kafka:
+    image: confluentinc/cp-kafka:7.5.1
+    container_name: omnicure-kafka-dev
+    ports:
+      - "9092:9092"
+      - "9093:9093"
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+    volumes:
+      - kafka_data_dev:/var/lib/kafka/data
+    networks:
+      - omnicure-network-dev
+
+  # Kafka UI
+  kafka-ui:
+    image: provectuslabs/kafka-ui:v0.7.2
+    container_name: omnicure-kafka-ui-dev
+    ports:
+      - "9090:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: omnicure-dev-cluster
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+      DYNAMIC_CONFIG_ENABLED: "true"
+    networks:
+      - omnicure-network-dev
+    depends_on:
+      - kafka
+
+  # Oracle Database
+  oracle-db:
+    image: container-registry.oracle.com/database/free:latest
+    container_name: omnicure-oracle-dev
+    ports:
+      - "1521:1521"
+      - "5500:5500"
+    environment:
+      ORACLE_PWD: OmniCureDev2024!
+      ORACLE_CHARACTERSET: AL32UTF8
+    volumes:
+      - oracle_data_dev:/opt/oracle/oradata
+    networks:
+      - omnicure-network-dev
+
+  # Redis
+  redis:
+    image: redis/redisstack:7.2.4-v6
+    container_name: omnicure-redis-dev
+    ports:
+      - "6379:6379"
+      - "8001:8001"
+    environment:
+      REDIS_ARGS: "--requirepass OmniCureDev2024! --maxmemory 512mb --maxmemory-policy allkeys-lru"
+    volumes:
+      - redis_data_dev:/data
+    networks:
+      - omnicure-network-dev
+
+  # Elasticsearch
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.12.0
+    container_name: omnicure-elasticsearch-dev
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    environment:
+      - discovery.type=single-node
+      - ELASTIC_PASSWORD=OmniCureDev2024!
+      - xpack.security.enabled=true
+      - xpack.security.enrollment.enabled=false
+      - ES_JAVA_OPTS=-Xms256m -Xmx512m
+      - cluster.name=omnicure-elk-dev
+    volumes:
+      - elasticsearch_data_dev:/usr/share/elasticsearch/data
+    networks:
+      - omnicure-network-dev
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+
+  # Logstash
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.12.0
+    container_name: omnicure-logstash-dev
+    ports:
+      - "5044:5044"
+      - "9600:9600"
+    environment:
+      LS_JAVA_OPTS: -Xms256m -Xmx512m
+    volumes:
+      - ./config/logstash/pipeline:/usr/share/logstash/pipeline
+      - ./config/logstash/logstash.yml:/usr/share/logstash/config/logstash.yml
+    networks:
+      - omnicure-network-dev
+    depends_on:
+      - elasticsearch
+
+  # Kibana
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.12.0
+    container_name: omnicure-kibana-dev
+    ports:
+      - "5601:5601"
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - ELASTICSEARCH_USERNAME=elastic
+      - ELASTIC_PASSWORD=OmniCureDev2024!
+      - xpack.security.enabled=false
+    networks:
+      - omnicure-network-dev
+    depends_on:
+      - elasticsearch
+
+volumes:
+  kafka_data_dev:
+    driver: local
+  oracle_data_dev:
+    driver: local
+  redis_data_dev:
+    driver: local
+  elasticsearch_data_dev:
+    driver: local
+
+networks:
+  omnicure-network-dev:
+    driver: bridge
+    name: omnicure-network-dev

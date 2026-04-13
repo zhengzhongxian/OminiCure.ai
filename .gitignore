@@ -1,0 +1,298 @@
+# ==============================================================================
+# OmniCure.ai - Comprehensive .gitignore
+# Covers .NET, Docker, IDEs, OS files, and common development artifacts
+# ==============================================================================
+
+## ========================
+## .NET / ASP.NET Core
+## ========================
+
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Ww][Ii]32/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+# .NET Core / ASP.NET Core
+*.nuspec
+*.nupkg
+*.snk
+*.DotSettings.user
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.mdb
+*.opendb
+*.pcfg
+
+# Visual Studio files
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.userprefs
+*.pidb
+*.booproj
+*.sln.ide/
+
+# Mono auto generated
+auto_generated/
+
+# Build results
+*.cache
+*.ilexe
+*.lastcodeanalysissucceeded
+
+# MSTest test results
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+
+# NCrunch
+_NCrunch_*
+.*crunch*.local.xml
+nCrunchTemp_*
+
+# JetBrains Rider
+*.sln.iml
+.idea/
+
+## ========================
+## Docker
+## ========================
+.dockerenv
+.docker
+docker-compose.override.yml
+*.pid
+
+## ========================
+## Node.js (for Kong, Kafka UI, etc.)
+## ========================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+.npm
+.eslintcache
+
+## ========================
+## Python (for scripts)
+## ========================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.eggs/
+.installed.cfg
+*.egg
+
+## ========================
+## Environment Variables & Secrets
+## ========================
+.env
+.env.local
+.env.*.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.env
+secrets/
+*.pfx
+*.pem
+*.key
+*.crt
+*.cer
+*.cert
+
+## ========================
+## Database Files
+## ========================
+*.mdf
+*.ldf
+*.sqlite
+*.sqlite3
+*.db-journal
+
+## ========================
+## ELK Stack Data
+## ========================
+elasticsearch_data/
+elasticsearch_data_dev/
+logstash/data/
+
+## ========================
+## Redis Dump
+## ========================
+dump.rdb
+
+## ========================
+## OS Files
+## ========================
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+[Dd]esktop.ini
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+$RECYCLE.BIN/
+
+# macOS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+*.tb
+
+# Linux
+*~
+.directory
+*.swp
+*.swo
+*~
+
+## ========================
+## IDE & Editor Files
+## ========================
+
+# VS Code
+.vscode/
+*.code-workspace
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# Sublime Text
+*.sublime-workspace
+*.sublime-project
+
+# Vim
+[._]*.s[a-v][a-z]
+*.s[a-v][a-z]
+*.un~
+Session.vim
+.netrwhist
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
+
+# Eclipse
+.metadata
+bin/
+tmp/
+*.tmp
+*.stacktrace
+
+## ========================
+## Docker Volumes (local development)
+## ========================
+oracle_data/
+oracle_data_dev/
+kafka_data/
+kafka_data_dev/
+redis_data/
+redis_data_dev/
+elasticsearch_data/
+elasticsearch_data_dev/
+
+## ========================
+## Temporary Files
+## ========================
+*.tmp
+*.temp
+temp/
+tmp/
+
+## ========================
+## Documentation
+## ========================
+*.docx~
+*.pdf~
+*.pptx~
+
+## ========================
+## CI/CD
+## ========================
+.azure-pipelines/
+.github/
+.circleci/
+.travis.yml
+Jenkinsfile
+.gitlab-ci.yml
+
+## ========================
+## Test Coverage
+## ========================
+coverage/
+*.coverage
+*.coveragexml
+coverage.cobertura.xml
+coverage.json
+coverage.opencover.xml
+nupkg/
+
+## ========================
+## NuGet
+## ========================
+packages/
+packages.config
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+## ========================
+## Entity Framework / Database Migrations
+## ========================
+*Migrations/*.cs
+!*Migrations/*.cs.exclude
+*Migrations/*.Designer.cs
+!*Migrations/*.Designer.cs.exclude
+
+## ========================
+## Application Specific
+## ========================
+appsettings.Production.json
+appsettings.Staging.json
+appsecrets/
+*.xml.doc

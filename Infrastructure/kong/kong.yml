@@ -1,0 +1,446 @@
+_format_version: "3.0"
+
+plugins:
+  # Rate Limiting
+  - name: rate-limiting
+    config:
+      minute: 100
+      policy: redis
+      redis:
+        host: redis
+        port: 6379
+        password: ChangeMe_In_Production_2024!
+      limit_by: ip
+
+  # CORS
+  - name: cors
+    config:
+      origins:
+        - "http://localhost:3000"
+        - "https://app.omnicure.ai"
+      methods:
+        - GET
+        - POST
+        - PUT
+        - DELETE
+        - PATCH
+        - OPTIONS
+      headers:
+        - Accept
+        - Authorization
+        - Content-Type
+        - X-Requested-With
+        - X-Tenant-Id
+      exposed_headers:
+        - X-Total-Count
+        - X-Page-Number
+        - X-Page-Size
+      max_age: 3600
+      credentials: true
+
+  - name: request-transformer
+    config:
+      add:
+        headers:
+          - X-Request-ID:$(uuid)
+          - X-Gateway-Version:1.0.0
+
+  - name: jwt
+    config:
+      uri_param_names:
+        - jwt
+      cookie_names:
+        - jwt
+      header_names:
+        - Authorization
+      algorithm: HS256
+      secret_is_base64: false
+      claims_to_verify:
+        - exp
+      run_on_preflight: true
+
+  - name: ip-restriction
+    config:
+      deny: []
+      message: Access denied from your IP
+
+services:
+  - name: iam-service
+    url: http://iam-service:5000
+    connect_timeout: 5000
+    write_timeout: 30000
+    read_timeout: 30000
+    routes:
+      - name: iam-auth-route
+        paths:
+          - /api/auth
+        strip_path: false
+        methods:
+          - POST
+      - name: iam-users-route
+        paths:
+          - /api/users
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+      - name: iam-roles-route
+        paths:
+          - /api/roles
+        strip_path: false
+    plugins:
+      - name: rate-limiting
+        config:
+          minute: 60
+
+  # ------------------------------------------------------------------------------
+  # Billing & Insurance Service
+  # ------------------------------------------------------------------------------
+  - name: billing-service
+    url: http://billing-service:5001
+    connect_timeout: 5000
+    write_timeout: 30000
+    read_timeout: 30000
+    routes:
+      - name: billing-route
+        paths:
+          - /api/billing
+        strip_path: false
+      - name: invoices-route
+        paths:
+          - /api/invoices
+        strip_path: false
+      - name: payments-route
+        paths:
+          - /api/payments
+        strip_path: false
+      - name: insurance-route
+        paths:
+          - /api/insurance
+        strip_path: false
+      - name: billing-health
+        paths:
+          - /health
+        strip_path: false
+        methods:
+          - GET
+    plugins:
+      - name: jwt
+      - name: rate-limiting
+        config:
+          minute: 120
+
+  # ------------------------------------------------------------------------------
+  # Laboratory & Imaging Service (LIS/PACS)
+  # ------------------------------------------------------------------------------
+  - name: lab-service
+    url: http://lab-service:5003
+    connect_timeout: 5000
+    write_timeout: 60000
+    read_timeout: 60000
+    routes:
+      - name: lab-route
+        paths:
+          - /api/laboratory
+        strip_path: false
+      - name: lab-results-route
+        paths:
+          - /api/lab-results
+        strip_path: false
+      - name: imaging-route
+        paths:
+          - /api/imaging
+        strip_path: false
+      - name: dicom-route
+        paths:
+          - /api/dicom
+        strip_path: false
+      - name: lab-health
+        paths:
+          - /health
+        strip_path: false
+        methods:
+          - GET
+    plugins:
+      - name: jwt
+      - name: rate-limiting
+        config:
+          minute: 200
+
+  # ------------------------------------------------------------------------------
+  # Hospital Infrastructure Admin Service
+  # ------------------------------------------------------------------------------
+  - name: hisadmin-service
+    url: http://hisadmin-service:5005
+    connect_timeout: 5000
+    write_timeout: 30000
+    read_timeout: 30000
+    routes:
+      - name: hisadmin-route
+        paths:
+          - /api/his
+        strip_path: false
+      - name: departments-route
+        paths:
+          - /api/departments
+        strip_path: false
+      - name: rooms-route
+        paths:
+          - /api/rooms
+        strip_path: false
+      - name: beds-route
+        paths:
+          - /api/beds
+        strip_path: false
+      - name: equipment-route
+        paths:
+          - /api/equipment
+        strip_path: false
+      - name: hisadmin-health
+        paths:
+          - /health
+        strip_path: false
+        methods:
+          - GET
+    plugins:
+      - name: jwt
+      - name: rate-limiting
+        config:
+          minute: 150
+
+  # ------------------------------------------------------------------------------
+  # Patient & EMR Service
+  # ------------------------------------------------------------------------------
+  - name: patient-service
+    url: http://patient-service:5007
+    connect_timeout: 5000
+    write_timeout: 30000
+    read_timeout: 30000
+    routes:
+      - name: patient-route
+        paths:
+          - /api/patients
+        strip_path: false
+      - name: emr-route
+        paths:
+          - /api/emr
+        strip_path: false
+      - name: patient-health
+        paths:
+          - /health
+        strip_path: false
+        methods:
+          - GET
+    plugins:
+      - name: jwt
+      - name: rate-limiting
+        config:
+          minute: 150
+
+  # ------------------------------------------------------------------------------
+  # Pharmacy & Inventory Service
+  # ------------------------------------------------------------------------------
+  - name: pharmacy-service
+    url: http://pharmacy-service:5009
+    connect_timeout: 5000
+    write_timeout: 30000
+    read_timeout: 30000
+    routes:
+      - name: pharmacy-route
+        paths:
+          - /api/pharmacy
+        strip_path: false
+      - name: medicines-route
+        paths:
+          - /api/medicines
+        strip_path: false
+      - name: prescriptions-route
+        paths:
+          - /api/prescriptions
+        strip_path: false
+      - name: pharmacy-health
+        paths:
+          - /health
+        strip_path: false
+        methods:
+          - GET
+    plugins:
+      - name: jwt
+      - name: rate-limiting
+        config:
+          minute: 150
+
+  # ------------------------------------------------------------------------------
+  # Appointment & Scheduling Service
+  # ------------------------------------------------------------------------------
+  - name: appointment-service
+    url: http://appointment-service:5011
+    connect_timeout: 5000
+    write_timeout: 30000
+    read_timeout: 30000
+    routes:
+      - name: appointment-route
+        paths:
+          - /api/appointments
+        strip_path: false
+      - name: queues-route
+        paths:
+          - /api/queues
+        strip_path: false
+      - name: schedules-route
+        paths:
+          - /api/schedules
+        strip_path: false
+      - name: appointment-health
+        paths:
+          - /health
+        strip_path: false
+        methods:
+          - GET
+    plugins:
+      - name: jwt
+      - name: rate-limiting
+        config:
+          minute: 200
+
+  # ------------------------------------------------------------------------------
+  # AI Diagnostic & Analytics Service
+  # ------------------------------------------------------------------------------
+  - name: ai-service
+    url: http://ai-service:5013
+    connect_timeout: 10000
+    write_timeout: 120000
+    read_timeout: 120000
+    routes:
+      - name: ai-diagnosis-route
+        paths:
+          - /api/ai/diagnosis
+        strip_path: false
+      - name: ai-analytics-route
+        paths:
+          - /api/ai/analytics
+        strip_path: false
+      - name: ai-health
+        paths:
+          - /health
+        strip_path: false
+        methods:
+          - GET
+    plugins:
+      - name: jwt
+      - name: rate-limiting
+        config:
+          minute: 30
+      - name: request-size-limiting
+        config:
+          allowed_payload_size: 50
+
+  # ------------------------------------------------------------------------------
+  # Communication & Notification Service
+  # ------------------------------------------------------------------------------
+  - name: communication-service
+    url: http://communication-service:5015
+    connect_timeout: 5000
+    write_timeout: 30000
+    read_timeout: 30000
+    routes:
+      - name: chat-route
+        paths:
+          - /api/chat
+        strip_path: false
+      - name: notifications-route
+        paths:
+          - /api/notifications
+        strip_path: false
+      - name: communication-health
+        paths:
+          - /health
+        strip_path: false
+        methods:
+          - GET
+    plugins:
+      - name: jwt
+      - name: rate-limiting
+        config:
+          minute: 300
+
+  # ------------------------------------------------------------------------------
+  # Staff & HR Service
+  # ------------------------------------------------------------------------------
+  - name: staff-service
+    url: http://staff-service:5017
+    connect_timeout: 5000
+    write_timeout: 30000
+    read_timeout: 30000
+    routes:
+      - name: staff-route
+        paths:
+          - /api/staff
+        strip_path: false
+      - name: doctors-route
+        paths:
+          - /api/doctors
+        strip_path: false
+      - name: staff-health
+        paths:
+          - /health
+        strip_path: false
+        methods:
+          - GET
+    plugins:
+      - name: jwt
+      - name: rate-limiting
+        config:
+          minute: 150
+
+# ==============================================================================
+# Consumers (for JWT auth)
+# ==============================================================================
+consumers:
+  - username: admin
+    jwt_secrets:
+      - algorithm: HS256
+        key: admin-secret-key-change-in-production
+        secret: admin-jwt-secret-change-in-production
+  - username: doctor
+    jwt_secrets:
+      - algorithm: HS256
+        key: doctor-secret-key-change-in-production
+        secret: doctor-jwt-secret-change-in-production
+  - username: nurse
+    jwt_secrets:
+      - algorithm: HS256
+        key: nurse-secret-key-change-in-production
+        secret: nurse-jwt-secret-change-in-production
+  - username: patient
+    jwt_secrets:
+      - algorithm: HS256
+        key: patient-secret-key-change-in-production
+        secret: patient-jwt-secret-change-in-production
+  - username: service-account
+    jwt_secrets:
+      - algorithm: HS256
+        key: service-account-secret-change-in-production
+        secret: service-account-jwt-secret-change-in-production
+
+# ==============================================================================
+# Upstream & Targets (Load Balancing)
+# ==============================================================================
+upstreams:
+  - name: billing-upstream
+    algorithm: round-robin
+    targets:
+      - target: billing-service:5001
+        weight: 100
+  - name: lab-upstream
+    algorithm: round-robin
+    targets:
+      - target: lab-service:5003
+        weight: 100
+  - name: hisadmin-upstream
+    algorithm: round-robin
+    targets:
+      - target: hisadmin-service:5005
+        weight: 100

@@ -1,0 +1,34 @@
+version: '3.8'
+
+name: omnicure-lab-dev
+
+services:
+  lab-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        BUILD_CONFIGURATION: Debug
+    container_name: omnicure-lab-service-dev
+    ports:
+      - "5003:80"
+      - "5004:8081"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+    depends_on:
+      - redis
+      - kafka
+    networks:
+      - omnicure-network-dev
+    volumes:
+      - ./src/LabService.API:/src/LabService.API
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:80/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  omnicure-network-dev:
+    external: true

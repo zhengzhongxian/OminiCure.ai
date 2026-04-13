@@ -1,0 +1,199 @@
+version: '3.8'
+
+name: omnicure-infra
+
+services:
+  # Kafka
+  kafka:
+    image: confluentinc/cp-kafka:${KAFKA_VERSION}
+    container_name: omnicure-kafka
+    ports:
+      - "${KAFKA_PORT}:9092"
+      - "${KAFKA_CONTROLLER_PORT}:9093"
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_LOG_RETENTION_HOURS: ${KAFKA_LOG_RETENTION_HOURS}
+      KAFKA_LOG_SEGMENT_BYTES: ${KAFKA_LOG_SEGMENT_BYTES}
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+    networks:
+      - omnicure-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "kafka-topics", "--bootstrap-server", "localhost:9092", "--list"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Kafka UI
+  kafka-ui:
+    image: provectuslabs/kafka-ui:${KAFKA_UI_VERSION}
+    container_name: omnicure-kafka-ui
+    ports:
+      - "${KAFKA_UI_PORT}:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: omnicure-cluster
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+      DYNAMIC_CONFIG_ENABLED: "true"
+    networks:
+      - omnicure-network
+    restart: unless-stopped
+    depends_on:
+      kafka:
+        condition: service_healthy
+
+  # Oracle Database
+  oracle-db:
+    image: container-registry.oracle.com/database/enterprise:${ORACLE_VERSION}
+    container_name: omnicure-oracle
+    ports:
+      - "${ORACLE_PORT}:1521"
+      - "${ORACLE_EM_PORT}:5500"
+    environment:
+      ORACLE_PWD: ${ORACLE_PASSWORD}
+      ORACLE_CHARACTERSET: ${ORACLE_CHARACTERSET}
+      ORACLE_EDITION: ${ORACLE_EDITION}
+    volumes:
+      - oracle_data:/opt/oracle/oradata
+      - ./scripts/oracle-init:/docker-entrypoint-initdb.d
+    networks:
+      - omnicure-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "bash", "-c", "echo SELECT 1 FROM DUAL | sqlplus -s system/$${ORACLE_PWD}@localhost:1521/FREEPDB1"]
+      interval: 60s
+      timeout: 20s
+      retries: 5
+      start_period: 120s
+    deploy:
+      resources:
+        limits:
+          memory: 4g
+          cpus: "2.0"
+
+  # Redis
+  redis:
+    image: redis/redisstack:${REDIS_VERSION}
+    container_name: omnicure-redis
+    ports:
+      - "${REDIS_PORT}:6379"
+      - "${REDIS_INSIGHT_PORT}:8001"
+    environment:
+      REDIS_ARGS: "--requirepass ${REDIS_PASSWORD} --maxmemory ${REDIS_MAXMEMORY} --maxmemory-policy ${REDIS_MAXMEMORY_POLICY}"
+    volumes:
+      - redis_data:/data
+      - ./config/redis/redis.conf:/usr/local/etc/redis/redis.conf
+    networks:
+      - omnicure-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # Elasticsearch
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:${ELASTIC_VERSION}
+    container_name: omnicure-elasticsearch
+    ports:
+      - "${ELASTIC_PORT}:9200"
+      - "${ELASTIC_TRANSPORT_PORT}:9300"
+    environment:
+      - discovery.type=single-node
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+      - xpack.security.enabled=true
+      - xpack.security.enrollment.enabled=false
+      - ES_JAVA_OPTS=${ELASTIC_JAVA_OPTS}
+      - cluster.name=omnicure-elk
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+      - ./config/elasticsearch/jvm.options:/usr/share/elasticsearch/config/jvm.options
+    networks:
+      - omnicure-network
+    restart: unless-stopped
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    healthcheck:
+      test: ["CMD-SHELL", "curl -u elastic:${ELASTIC_PASSWORD} -f http://localhost:9200/_cluster/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Logstash
+  logstash:
+    image: docker.elastic.co/logstash/logstash:${ELASTIC_VERSION}
+    container_name: omnicure-logstash
+    ports:
+      - "${LOGSTASH_PORT}:5044"
+      - "${LOGSTASH_API_PORT}:9600"
+    environment:
+      LS_JAVA_OPTS: ${LOGSTASH_JAVA_OPTS}
+    volumes:
+      - ./config/logstash/pipeline:/usr/share/logstash/pipeline
+      - ./config/logstash/logstash.yml:/usr/share/logstash/config/logstash.yml
+    networks:
+      - omnicure-network
+    restart: unless-stopped
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9600/_node/stats || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Kibana
+  kibana:
+    image: docker.elastic.co/kibana/kibana:${ELASTIC_VERSION}
+    container_name: omnicure-kibana
+    ports:
+      - "${KIBANA_PORT}:5601"
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - ELASTICSEARCH_USERNAME=${KIBANA_ELASTIC_USER}
+      - ELASTICSEARCH_PASSWORD=${ELASTIC_PASSWORD}
+      - xpack.security.enabled=false
+    volumes:
+      - ./config/kibana/kibana.yml:/usr/share/kibana/config/kibana.yml
+    networks:
+      - omnicure-network
+    restart: unless-stopped
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:5601/api/status || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+volumes:
+  kafka_data:
+    driver: local
+  oracle_data:
+    driver: local
+  redis_data:
+    driver: local
+  elasticsearch_data:
+    driver: local
+
+networks:
+  omnicure-network:
+    driver: bridge
+    name: omnicure-network
