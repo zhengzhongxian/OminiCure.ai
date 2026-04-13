@@ -34,23 +34,6 @@ services:
       timeout: 10s
       retries: 3
 
-  # Kafka UI
-  kafka-ui:
-    image: provectuslabs/kafka-ui:${KAFKA_UI_VERSION}
-    container_name: omnicure-kafka-ui
-    ports:
-      - "${KAFKA_UI_PORT}:8080"
-    environment:
-      KAFKA_CLUSTERS_0_NAME: omnicure-cluster
-      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
-      DYNAMIC_CONFIG_ENABLED: "true"
-    networks:
-      - omnicure-network
-    restart: unless-stopped
-    depends_on:
-      kafka:
-        condition: service_healthy
-
   # MongoDB Replica Set - Primary
   mongo1:
     image: mongo:7.0
@@ -85,9 +68,9 @@ services:
     depends_on:
       - mongo1
 
-  # Oracle Database
+  # Oracle Database (Free 26ai)
   oracle-db:
-    image: container-registry.oracle.com/database/enterprise:${ORACLE_VERSION}
+    image: container-registry.oracle.com/database/free:latest
     container_name: omnicure-oracle
     ports:
       - "${ORACLE_PORT}:1521"
@@ -95,7 +78,6 @@ services:
     environment:
       ORACLE_PWD: ${ORACLE_PASSWORD}
       ORACLE_CHARACTERSET: ${ORACLE_CHARACTERSET}
-      ORACLE_EDITION: ${ORACLE_EDITION}
     volumes:
       - oracle_data:/opt/oracle/oradata
       - ./scripts/oracle-init:/docker-entrypoint-initdb.d
@@ -111,7 +93,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 4g
+          memory: 2g
           cpus: "2.0"
 
   # Redis
