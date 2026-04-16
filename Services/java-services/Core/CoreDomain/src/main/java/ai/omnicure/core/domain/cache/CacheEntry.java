@@ -1,9 +1,13 @@
-package ai.omnicure.core.infra.cache;
+package ai.omnicure.core.domain.cache;
 
-import ai.omnicure.core.infra.helper.CacheKeyResolver;
-import ai.omnicure.core.infra.helper.JsonHelper;
+import ai.omnicure.core.shared.helper.CacheKeyHelper;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.lang.reflect.Constructor;
 
+@Getter
+@Setter
 public abstract class CacheEntry<T> {
 
     protected final String prefix;
@@ -13,24 +17,10 @@ public abstract class CacheEntry<T> {
         this.prefix = prefix;
     }
 
-    public T getValue() { return value; }
-
-    public void setValue(T value) { this.value = value; }
-
     public String getKey(String identifier) {
-        return CacheKeyResolver.resolve(prefix, identifier);
+        return CacheKeyHelper.resolve(prefix, identifier);
     }
 
-    public String toJson() {
-        return value != null ? JsonHelper.serializeSafe(value) : "";
-    }
-
-    @Override
-    public String toString() {
-        return toJson();
-    }
-
-    @SuppressWarnings("unchecked")
     public static <T, TEntry extends CacheEntry<T>> TEntry load(Class<TEntry> entryClass, String prefix, T value) {
         try {
             Constructor<TEntry> constructor = entryClass.getDeclaredConstructor(String.class);

@@ -1,8 +1,8 @@
-package ai.omnicure.core.infra.helper;
+package ai.omnicure.core.shared.helper;
 
-public final class CacheKeyResolver {
+public final class CacheKeyHelper {
 
-    private CacheKeyResolver() {
+    private CacheKeyHelper() {
         throw new UnsupportedOperationException("Utility class");
     }
 

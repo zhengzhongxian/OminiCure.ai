@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\BillingService.Application\BillingService.Application.csproj" />
+    <ProjectReference Include="..\..\..\Core\OmniCure.Core.WebShared\OmniCure.Core.WebShared.csproj" />
   </ItemGroup>
 
 </Project>

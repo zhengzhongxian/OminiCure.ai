@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="OmniCure.Core.Domain/OmniCure.Core.Domain.csproj" />
+  <Project Path="OmniCure.Core.Infrastructure/OmniCure.Core.Infrastructure.csproj" />
+  <Project Path="OmniCure.Core.Shared/OmniCure.Core.Shared.csproj" />
+  <Project Path="OmniCure.Core.WebShared/OmniCure.Core.WebShared.csproj" />
+</Solution>

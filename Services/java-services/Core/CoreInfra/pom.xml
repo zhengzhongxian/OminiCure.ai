@@ -19,6 +19,10 @@
             <groupId>ai.omnicure</groupId>
             <artifactId>core-domain</artifactId>
         </dependency>
+        <dependency>
+            <groupId>ai.omnicure</groupId>
+            <artifactId>core-shared</artifactId>
+        </dependency>
         <!-- Spring Data JPA (Hibernate) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
