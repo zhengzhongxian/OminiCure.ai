@@ -1,0 +1,36 @@
+version: '3.8'
+
+name: omnicure-iam-dev
+
+services:
+  iam-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        BUILD_PROFILE: dev
+    container_name: omnicure-iam-service-dev
+    ports:
+      - "5000:8080"
+      - "5010:8081"
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+    depends_on:
+      - postgres-write
+      - postgres-read
+      - redis
+      - rabbitmq
+    networks:
+      - omnicure-network-dev
+    volumes:
+      - ./iam-api/src:/app/iam-api/src
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  omnicure-network-dev:
+    external: true

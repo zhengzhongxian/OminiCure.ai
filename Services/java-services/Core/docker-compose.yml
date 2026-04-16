@@ -1,0 +1,16 @@
+version: '3.8'
+
+name: omnicore-core
+
+# Core is a shared library, not a standalone service.
+# It is built and published as a JAR dependency for other services.
+# This file is kept for reference but should not be run independently.
+
+services:
+  core-library:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: omnicore-core-build
+    profiles:
+      - build-only

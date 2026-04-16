@@ -1,0 +1,17 @@
+version: '3.8'
+
+name: omnicore-core-dev
+
+# Core is a shared library, not a standalone service.
+# This file is kept for reference but should not be run independently.
+
+services:
+  core-library-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        BUILD_PROFILE: dev
+    container_name: omnicore-core-dev-build
+    profiles:
+      - build-only

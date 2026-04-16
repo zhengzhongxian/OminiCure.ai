@@ -3,28 +3,46 @@ version: '3.8'
 name: omnicure-infra-dev
 
 services:
-  # Kafka
-  kafka:
-    image: confluentinc/cp-kafka:7.5.1
-    container_name: omnicure-kafka-dev
+  # RabbitMQ
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    container_name: omnicure-rabbitmq-dev
     ports:
-      - "9092:9092"
-      - "9093:9093"
+      - "5672:5672"
+      - "15672:15672"
     environment:
-      KAFKA_NODE_ID: 1
-      KAFKA_PROCESS_ROLES: broker,controller
-      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
-      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
-      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
-      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: OmniCureDev2024!
     volumes:
-      - kafka_data_dev:/var/lib/kafka/data
+      - rabbitmq_data_dev:/var/lib/rabbitmq
     networks:
       - omnicure-network-dev
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "check_port_connectivity"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # PostgreSQL - Write (Primary)
+  postgres-write:
+    image: postgres:16
+    container_name: omnicure-postgres-write-dev
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: omnicure
+      POSTGRES_PASSWORD: OmniCureDev2024!
+      POSTGRES_DB: omnicure
+    volumes:
+      - postgres_write_data_dev:/var/lib/postgresql/data
+    networks:
+      - omnicure-network-dev
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U omnicure"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   # MongoDB Replica Set - Primary
   mongo1:
@@ -53,20 +71,28 @@ services:
     depends_on:
       - mongo1
 
-  # Oracle Database
-  oracle-db:
-    image: container-registry.oracle.com/database/free:latest
-    container_name: omnicure-oracle-dev
+  # PostgreSQL - Read (Replica)
+  postgres-read:
+    image: postgres:16
+    container_name: omnicure-postgres-read-dev
     ports:
-      - "1521:1521"
-      - "5500:5500"
+      - "5433:5432"
     environment:
-      ORACLE_PWD: OmniCureDev2024!
-      ORACLE_CHARACTERSET: AL32UTF8
+      POSTGRES_USER: omnicure
+      POSTGRES_PASSWORD: OmniCureDev2024!
+      POSTGRES_DB: omnicure
     volumes:
-      - oracle_data_dev:/opt/oracle/oradata
+      - postgres_read_data_dev:/var/lib/postgresql/data
     networks:
       - omnicure-network-dev
+    depends_on:
+      - postgres-write
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U omnicure"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   # Redis
   redis:
@@ -82,75 +108,75 @@ services:
     networks:
       - omnicure-network-dev
 
-  # Elasticsearch
-  elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.12.0
-    container_name: omnicure-elasticsearch-dev
-    ports:
-      - "9200:9200"
-      - "9300:9300"
-    environment:
-      - discovery.type=single-node
-      - ELASTIC_PASSWORD=OmniCureDev2024!
-      - xpack.security.enabled=true
-      - xpack.security.enrollment.enabled=false
-      - ES_JAVA_OPTS=-Xms256m -Xmx512m
-      - cluster.name=omnicure-elk-dev
-    volumes:
-      - elasticsearch_data_dev:/usr/share/elasticsearch/data
-    networks:
-      - omnicure-network-dev
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
+  # ELK Stack - Commented out (not in use yet)
+  # elasticsearch:
+  #   image: docker.elastic.co/elasticsearch/elasticsearch:8.12.0
+  #   container_name: omnicure-elasticsearch-dev
+  #   ports:
+  #     - "9200:9200"
+  #     - "9300:9300"
+  #   environment:
+  #     - discovery.type=single-node
+  #     - ELASTIC_PASSWORD=OmniCureDev2024!
+  #     - xpack.security.enabled=true
+  #     - xpack.security.enrollment.enabled=false
+  #     - ES_JAVA_OPTS=-Xms256m -Xmx512m
+  #     - cluster.name=omnicure-elk-dev
+  #   volumes:
+  #     - elasticsearch_data_dev:/usr/share/elasticsearch/data
+  #   networks:
+  #     - omnicure-network-dev
+  #   ulimits:
+  #     memlock:
+  #       soft: -1
+  #       hard: -1
 
-  # Logstash
-  logstash:
-    image: docker.elastic.co/logstash/logstash:8.12.0
-    container_name: omnicure-logstash-dev
-    ports:
-      - "5044:5044"
-      - "9600:9600"
-    environment:
-      LS_JAVA_OPTS: -Xms256m -Xmx512m
-    volumes:
-      - ./config/logstash/pipeline:/usr/share/logstash/pipeline
-      - ./config/logstash/logstash.yml:/usr/share/logstash/config/logstash.yml
-    networks:
-      - omnicure-network-dev
-    depends_on:
-      - elasticsearch
+  # logstash:
+  #   image: docker.elastic.co/logstash/logstash:8.12.0
+  #   container_name: omnicure-logstash-dev
+  #   ports:
+  #     - "5044:5044"
+  #     - "9600:9600"
+  #   environment:
+  #     LS_JAVA_OPTS: -Xms256m -Xmx512m
+  #   volumes:
+  #     - ./config/logstash/pipeline:/usr/share/logstash/pipeline
+  #     - ./config/logstash/logstash.yml:/usr/share/logstash/config/logstash.yml
+  #   networks:
+  #     - omnicure-network-dev
+  #   depends_on:
+  #     - elasticsearch
 
-  # Kibana
-  kibana:
-    image: docker.elastic.co/kibana/kibana:8.12.0
-    container_name: omnicure-kibana-dev
-    ports:
-      - "5601:5601"
-    environment:
-      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
-      - ELASTICSEARCH_USERNAME=elastic
-      - ELASTIC_PASSWORD=OmniCureDev2024!
-      - xpack.security.enabled=false
-    networks:
-      - omnicure-network-dev
-    depends_on:
-      - elasticsearch
+  # kibana:
+  #   image: docker.elastic.co/kibana/kibana:8.12.0
+  #   container_name: omnicure-kibana-dev
+  #   ports:
+  #     - "5601:5601"
+  #   environment:
+  #     - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+  #     - ELASTICSEARCH_USERNAME=elastic
+  #     - ELASTIC_PASSWORD=OmniCureDev2024!
+  #     - xpack.security.enabled=false
+  #   networks:
+  #     - omnicure-network-dev
+  #   depends_on:
+  #     - elasticsearch
 
 volumes:
-  kafka_data_dev:
+  rabbitmq_data_dev:
+    driver: local
+  postgres_write_data_dev:
+    driver: local
+  postgres_read_data_dev:
     driver: local
   mongo1_data_dev:
     driver: local
   mongo2_data_dev:
     driver: local
-  oracle_data_dev:
-    driver: local
   redis_data_dev:
     driver: local
-  elasticsearch_data_dev:
-    driver: local
+  # elasticsearch_data_dev:  # Commented out (ELK stack not in use)
+  #   driver: local
 
 networks:
   omnicure-network-dev:

@@ -3,36 +3,70 @@ version: '3.8'
 name: omnicure-infra
 
 services:
-  # Kafka
-  kafka:
-    image: confluentinc/cp-kafka:${KAFKA_VERSION}
-    container_name: omnicure-kafka
+  # RabbitMQ
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    container_name: omnicure-rabbitmq
     ports:
-      - "${KAFKA_PORT}:9092"
-      - "${KAFKA_CONTROLLER_PORT}:9093"
+      - "${RABBITMQ_PORT}:5672"
+      - "${RABBITMQ_MANAGEMENT_PORT}:15672"
     environment:
-      KAFKA_NODE_ID: 1
-      KAFKA_PROCESS_ROLES: broker,controller
-      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
-      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
-      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
-      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
-      KAFKA_LOG_RETENTION_HOURS: ${KAFKA_LOG_RETENTION_HOURS}
-      KAFKA_LOG_SEGMENT_BYTES: ${KAFKA_LOG_SEGMENT_BYTES}
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
     volumes:
-      - kafka_data:/var/lib/kafka/data
+      - rabbitmq_data:/var/lib/rabbitmq
     networks:
       - omnicure-network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "kafka-topics", "--bootstrap-server", "localhost:9092", "--list"]
+      test: ["CMD", "rabbitmq-diagnostics", "check_port_connectivity"]
       interval: 30s
       timeout: 10s
-      retries: 3
+      retries: 5
+
+  # PostgreSQL - Write (Primary)
+  postgres-write:
+    image: postgres:16
+    container_name: omnicure-postgres-write
+    ports:
+      - "${POSTGRES_WRITE_PORT}:5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - postgres_write_data:/var/lib/postgresql/data
+    networks:
+      - omnicure-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # PostgreSQL - Read (Replica)
+  postgres-read:
+    image: postgres:16
+    container_name: omnicure-postgres-read
+    ports:
+      - "${POSTGRES_READ_PORT}:5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - postgres_read_data:/var/lib/postgresql/data
+    networks:
+      - omnicure-network
+    restart: unless-stopped
+    depends_on:
+      - postgres-write
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   # MongoDB Replica Set - Primary
   mongo1:
@@ -67,34 +101,6 @@ services:
     restart: unless-stopped
     depends_on:
       - mongo1
-
-  # Oracle Database (Free 26ai)
-  oracle-db:
-    image: container-registry.oracle.com/database/free:latest
-    container_name: omnicure-oracle
-    ports:
-      - "${ORACLE_PORT}:1521"
-      - "${ORACLE_EM_PORT}:5500"
-    environment:
-      ORACLE_PWD: ${ORACLE_PASSWORD}
-      ORACLE_CHARACTERSET: ${ORACLE_CHARACTERSET}
-    volumes:
-      - oracle_data:/opt/oracle/oradata
-      - ./scripts/oracle-init:/docker-entrypoint-initdb.d
-    networks:
-      - omnicure-network
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "bash", "-c", "echo SELECT 1 FROM DUAL | sqlplus -s system/$${ORACLE_PWD}@localhost:1521/FREEPDB1"]
-      interval: 60s
-      timeout: 20s
-      retries: 5
-      start_period: 120s
-    deploy:
-      resources:
-        limits:
-          memory: 2g
-          cpus: "2.0"
 
   # Redis
   redis:
@@ -200,13 +206,15 @@ services:
       retries: 5
 
 volumes:
-  kafka_data:
+  rabbitmq_data:
+    driver: local
+  postgres_write_data:
+    driver: local
+  postgres_read_data:
     driver: local
   mongo1_data:
     driver: local
   mongo2_data:
-    driver: local
-  oracle_data:
     driver: local
   redis_data:
     driver: local

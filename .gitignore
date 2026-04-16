@@ -328,3 +328,11 @@ appsettings.Production.json
 appsettings.Staging.json
 appsecrets/
 *.xml.doc
+
+## ========================
+## AI / GitHub / Misc
+## ========================
+github/
+qwen.md
+*qwen-api-key*
+qwen-api-key*

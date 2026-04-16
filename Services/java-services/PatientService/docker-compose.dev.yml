@@ -1,0 +1,36 @@
+version: '3.8'
+
+name: omnicure-patient-dev
+
+services:
+  patient-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        BUILD_PROFILE: dev
+    container_name: omnicure-patient-service-dev
+    ports:
+      - "5007:8080"
+      - "5008:8081"
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+    depends_on:
+      - mongo1
+      - mongo2
+      - redis
+      - rabbitmq
+    networks:
+      - omnicure-network-dev
+    volumes:
+      - ./patient-api/src:/app/patient-api/src
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  omnicure-network-dev:
+    external: true
