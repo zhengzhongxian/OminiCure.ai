@@ -44,6 +44,16 @@
             </dependency>
             <dependency>
                 <groupId>ai.omnicure</groupId>
+                <artifactId>core-application</artifactId>
+                <version>${core.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>ai.omnicure</groupId>
+                <artifactId>core-infra</artifactId>
+                <version>${core.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>ai.omnicure</groupId>
                 <artifactId>patient-domain</artifactId>
                 <version>${project.version}</version>
             </dependency>

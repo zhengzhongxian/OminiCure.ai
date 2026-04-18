@@ -54,7 +54,7 @@ plugins:
       header_names:
         - Authorization
       algorithm: HS256
-      secret_is_base64: false
+      secret_is_base64: true
       claims_to_verify:
         - exp
       run_on_preflight: true
@@ -399,31 +399,11 @@ services:
 # Consumers (for JWT auth)
 # ==============================================================================
 consumers:
-  - username: admin
+  - username: omnicure-users
     jwt_secrets:
       - algorithm: HS256
-        key: admin-secret-key-change-in-production
-        secret: admin-jwt-secret-change-in-production
-  - username: doctor
-    jwt_secrets:
-      - algorithm: HS256
-        key: doctor-secret-key-change-in-production
-        secret: doctor-jwt-secret-change-in-production
-  - username: nurse
-    jwt_secrets:
-      - algorithm: HS256
-        key: nurse-secret-key-change-in-production
-        secret: nurse-jwt-secret-change-in-production
-  - username: patient
-    jwt_secrets:
-      - algorithm: HS256
-        key: patient-secret-key-change-in-production
-        secret: patient-jwt-secret-change-in-production
-  - username: service-account
-    jwt_secrets:
-      - algorithm: HS256
-        key: service-account-secret-change-in-production
-        secret: service-account-jwt-secret-change-in-production
+        key: omnicure
+        secret: b21uaWN1cmUtYWktY29yZS1zZWNyZXQta2V5LTIwMjQ=
 
 # ==============================================================================
 # Upstream & Targets (Load Balancing)

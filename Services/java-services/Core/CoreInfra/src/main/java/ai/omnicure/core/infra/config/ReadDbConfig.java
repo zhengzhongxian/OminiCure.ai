@@ -23,7 +23,7 @@ import java.util.Map;
 @EnableJpaRepositories(
         entityManagerFactoryRef = KeyConstants.ConnectionStrings.READ_ENTITY_MANAGER_FACTORY,
         transactionManagerRef = KeyConstants.ConnectionStrings.READ_TRANSACTION_MANAGER,
-        basePackages = {"ai.omnicure.**.repository.read"}
+        basePackages = {"ai.omnicure"}
 )
 public class ReadDbConfig {
 
@@ -52,7 +52,7 @@ public class ReadDbConfig {
 
         return builder
                 .dataSource(readDataSource)
-                .packages("ai.omnicure.**.domain.entity")
+                .packages("ai.omnicure")
                 .persistenceUnit(KeyConstants.ConnectionStrings.READ_ENTITY_MANAGER_FACTORY)
                 .properties(jpaProperties)
                 .build();

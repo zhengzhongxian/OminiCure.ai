@@ -1,16 +1,28 @@
 server:
-  port: ${SERVER_PORT:5000}
+  port: ${SERVER_PORT:8080}
 
 spring:
   application:
     name: iam-service
+  data:
+    redis:
+      host: ${REDIS_HOST:redis}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:OmniCureDev2024!}
+    mongodb:
+      uri: ${MONGO_URI:mongodb://mongo1:27017,mongo2:27018/omnicure_iam?replicaSet=rs0}
+  rabbitmq:
+    host: ${RABBITMQ_HOST:rabbitmq}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USER:admin}
+    password: ${RABBITMQ_PASSWORD:OmniCureDev2024!}
 app:
   migration:
     max-retries: ${MIGRATION_MAX_RETRIES:5}
     retry-interval: ${MIGRATION_RETRY_INTERVAL:5000}
   datasource:
     write:
-      jdbc-url: ${POSTGRES_WRITE_URL:jdbc:postgresql://postgres-write:5432/omnicure}
+      url: ${POSTGRES_WRITE_URL:jdbc:postgresql://postgres-write:5432/omnicure_iam}
       username: ${POSTGRES_USER:omnicure}
       password: ${POSTGRES_PASSWORD:OmniCureDev2024!}
       driver-class-name: org.postgresql.Driver
@@ -19,7 +31,7 @@ app:
         minimum-idle: ${DB_MIN_IDLE:5}
         connection-timeout: ${DB_CONN_TIMEOUT:30000}
     read:
-      jdbc-url: ${POSTGRES_READ_URL:jdbc:postgresql://postgres-read:5432/omnicure}
+      url: ${POSTGRES_READ_URL:jdbc:postgresql://postgres-read:5432/omnicure_iam}
       username: ${POSTGRES_USER:omnicure}
       password: ${POSTGRES_PASSWORD:OmniCureDev2024!}
       driver-class-name: org.postgresql.Driver
@@ -43,17 +55,18 @@ app:
       hibernate:
         format_sql: ${HIBERNATE_FORMAT_SQL:true}
         dialect: org.hibernate.dialect.PostgreSQLDialect
-  data:
-    redis:
-      host: ${REDIS_HOST:redis}
-      port: ${REDIS_PORT:6379}
-      password: ${REDIS_PASSWORD:OmniCureDev2024!}
 
-# JWT Configuration
-jwt:
-  secret: ${JWT_SECRET:ChangeMe_In_Production_IAM_JWT_Secret_2024!}
-  expiration: ${JWT_EXPIRATION:86400000}  # 24 hours in milliseconds
-  refresh-expiration: ${JWT_REFRESH_EXPIRATION:604800000}  # 7 days in milliseconds
+  security:
+    jwt:
+      key: "b21uaWN1cmUtYWktY29yZS1zZWNyZXQta2V5LTIwMjQ="
+      issuer: "omnicure"
+      audience: "omnicure-clients"
+      access-token-duration-minutes: 30
+      refresh-token-duration-days: 7
+
+redis:
+  refresh-tokens:
+    prefix-key: "rt"
 
 springdoc:
   swagger-ui:

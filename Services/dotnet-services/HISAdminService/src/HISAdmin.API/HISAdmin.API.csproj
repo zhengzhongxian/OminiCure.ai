@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\HISAdmin.Application\HISAdmin.Application.csproj" />
+    <ProjectReference Include="..\HISAdmin.Infrastructure\HISAdmin.Infrastructure.csproj" />
     <ProjectReference Include="..\..\..\Core\OmniCure.Core.WebShared\OmniCure.Core.WebShared.csproj" />
   </ItemGroup>
 

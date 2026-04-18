@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using OmniCure.Core.Domain.Common;
-using OmniCure.Core.Domain.Interfaces.Services.Authentication;
+using OmniCure.Core.Application.Common.Interfaces.Services;
 using System.Linq.Expressions;
 
 namespace OmniCure.Core.Infrastructure.Persistence.Contexts;

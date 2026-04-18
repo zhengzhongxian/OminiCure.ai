@@ -4,7 +4,7 @@ public static class KeyConstants
 {
     public static class ConnectionStrings
     {
-       
+        public const string Redis = "Redis";
     }
 
     public static class ConfigurationSections

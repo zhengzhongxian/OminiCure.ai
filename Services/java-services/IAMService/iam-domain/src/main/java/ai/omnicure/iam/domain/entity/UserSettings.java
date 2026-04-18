@@ -1,7 +1,8 @@
 package ai.omnicure.iam.domain.entity;
 
+import ai.omnicure.iam.domain.enums.DisplayMode;
+import ai.omnicure.iam.domain.enums.Language;
 import jakarta.persistence.*;
-
 
 import lombok.Getter;
 import lombok.Setter;
@@ -24,11 +25,13 @@ public class UserSettings {
     @JoinColumn(name = "user_id", nullable = false, unique = true)
     private User user;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "choice_theme", length = 50)
-    private String choiceTheme = "LIGHT";
+    private DisplayMode choiceTheme = DisplayMode.LIGHT;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "choice_language", length = 10)
-    private String choiceLanguage = "en";
+    private Language choiceLanguage = Language.EN;
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
@@ -36,3 +39,4 @@ public class UserSettings {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 }
+

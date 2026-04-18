@@ -36,6 +36,13 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
     volumes:
       - postgres_write_data:/var/lib/postgresql/data
+      - ./scripts/postgres/primary-wrapper.sh:/usr/local/bin/primary-wrapper.sh
+    entrypoint:
+      - bash
+      - -c
+      - tr -d '\r' < /usr/local/bin/primary-wrapper.sh > /tmp/primary-wrapper.sh && chmod +x /tmp/primary-wrapper.sh && exec /tmp/primary-wrapper.sh "$@"
+      - --
+    command: ["postgres", "-c", "wal_level=replica", "-c", "max_wal_senders=10", "-c", "max_replication_slots=10", "-c", "hot_standby=on"]
     networks:
       - omnicure-network
     restart: unless-stopped
@@ -57,6 +64,13 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
     volumes:
       - postgres_read_data:/var/lib/postgresql/data
+      - ./scripts/postgres/replica-wrapper.sh:/usr/local/bin/replica-wrapper.sh
+    entrypoint:
+      - bash
+      - -c
+      - tr -d '\r' < /usr/local/bin/replica-wrapper.sh > /tmp/replica-wrapper.sh && chmod +x /tmp/replica-wrapper.sh && exec /tmp/replica-wrapper.sh "$@"
+      - --
+    command: ["postgres", "-c", "hot_standby=on"]
     networks:
       - omnicure-network
     restart: unless-stopped
@@ -104,7 +118,7 @@ services:
 
   # Redis
   redis:
-    image: redis/redisstack:${REDIS_VERSION}
+    image: redis/redis-stack:${REDIS_VERSION}
     container_name: omnicure-redis
     ports:
       - "${REDIS_PORT}:6379"

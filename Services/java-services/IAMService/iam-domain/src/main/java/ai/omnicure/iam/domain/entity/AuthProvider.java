@@ -1,8 +1,7 @@
 package ai.omnicure.iam.domain.entity;
 
+import ai.omnicure.iam.domain.enums.AuthProviderName;
 import jakarta.persistence.*;
-
-
 
 import lombok.Getter;
 import lombok.Setter;
@@ -27,8 +26,9 @@ public class AuthProvider {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "provider_name", nullable = false, length = 50)
-    private String providerName;
+    private AuthProviderName providerName;
 
     @Column(name = "provider_subject_id", nullable = false, length = 255)
     private String providerSubjectId;

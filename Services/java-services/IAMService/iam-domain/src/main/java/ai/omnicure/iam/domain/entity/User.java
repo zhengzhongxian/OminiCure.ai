@@ -1,7 +1,7 @@
 package ai.omnicure.iam.domain.entity;
 
 import ai.omnicure.core.domain.entity.BaseEntity;
-
+import ai.omnicure.iam.domain.enums.UserStatus;
 
 import jakarta.persistence.*;
 
@@ -38,8 +38,9 @@ public class User extends BaseEntity {
     @Column(name = "email", nullable = false, unique = true, length = 255)
     private String email;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 20)
-    private String status = "ACTIVE";
+    private UserStatus status = UserStatus.ACTIVE;
 
     @Column(name = "is_verified", nullable = false)
     private Boolean isVerified = false;

@@ -20,14 +20,15 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.crypto.SecretKey;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+
+import io.jsonwebtoken.io.Decoders;
 
 @Component
 public class JwtAuthFilter extends OncePerRequestFilter {
 
-    @Value("${" + KeyConstants.ConfigurationSections.JWT_SECRET + ":defaultSuperSecretKeyThatIsAtLeast32Bytes}")
+    @Value("${" + KeyConstants.ConfigurationSections.JWT_SETTINGS + ".key}")
     private String secretKeyString;
 
     @Override
@@ -46,7 +47,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         final String jwt = authHeader.substring(7);
 
         try {
-            SecretKey key = Keys.hmacShaKeyFor(secretKeyString.getBytes(StandardCharsets.UTF_8));
+            SecretKey key = Keys.hmacShaKeyFor(Decoders.BASE64.decode(secretKeyString));
             
             Claims claims = Jwts.parser()
                     .verifyWith(key)

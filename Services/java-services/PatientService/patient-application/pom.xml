@@ -19,5 +19,9 @@
             <groupId>ai.omnicure</groupId>
             <artifactId>patient-domain</artifactId>
         </dependency>
+        <dependency>
+            <groupId>ai.omnicure</groupId>
+            <artifactId>core-application</artifactId>
+        </dependency>
     </dependencies>
 </project>

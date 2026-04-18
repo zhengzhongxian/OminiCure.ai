@@ -17,11 +17,7 @@
     <dependencies>
         <dependency>
             <groupId>ai.omnicure</groupId>
-            <artifactId>core-domain</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>ai.omnicure</groupId>
-            <artifactId>core-shared</artifactId>
+            <artifactId>core-application</artifactId>
         </dependency>
         <!-- Spring Data JPA (Hibernate) -->
         <dependency>
@@ -56,6 +52,15 @@
         <dependency>
             <groupId>io.github.resilience4j</groupId>
             <artifactId>resilience4j-spring-boot3</artifactId>
+        </dependency>
+        <!-- Redis -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>redis.clients</groupId>
+            <artifactId>jedis</artifactId>
         </dependency>
         <!-- Lombok -->
         <dependency>

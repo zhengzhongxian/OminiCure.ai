@@ -21,7 +21,7 @@
         </dependency>
         <dependency>
             <groupId>ai.omnicure</groupId>
-            <artifactId>patient-application</artifactId>
+            <artifactId>patient-infrastructure</artifactId>
         </dependency>
 
         <dependency>

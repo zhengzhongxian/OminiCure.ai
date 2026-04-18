@@ -1,8 +1,7 @@
 package ai.omnicure.iam.domain.entity;
 
+import ai.omnicure.iam.domain.enums.LockReasonCode;
 import jakarta.persistence.*;
-
-
 
 import lombok.Getter;
 import lombok.Setter;
@@ -25,8 +24,9 @@ public class AccountLockLog {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "reason_code", length = 50)
-    private String reasonCode;
+    private LockReasonCode reasonCode;
 
     @Column(name = "locked_at", nullable = false)
     private LocalDateTime lockedAt;

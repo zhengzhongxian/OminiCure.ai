@@ -1,12 +1,10 @@
-version: '3.8'
-
 name: omnicure-patient-dev
 
 services:
   patient-service:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: PatientService/Dockerfile
       args:
         BUILD_PROFILE: dev
     container_name: omnicure-patient-service-dev
@@ -15,15 +13,8 @@ services:
       - "5008:8081"
     environment:
       SPRING_PROFILES_ACTIVE: dev
-    depends_on:
-      - mongo1
-      - mongo2
-      - redis
-      - rabbitmq
     networks:
       - omnicure-network-dev
-    volumes:
-      - ./patient-api/src:/app/patient-api/src
     restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:8080/actuator/health || exit 1"]

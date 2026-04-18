@@ -26,7 +26,8 @@ public final class KeyConstants {
         public static final String READ_DATASOURCE = "app.datasource.read";
         public static final String READ_HIKARI = "app.datasource.read.hikari";
         public static final String REDIS = "spring.data.redis";
-        public static final String JWT_SECRET = "app.security.jwt.secret";
+        public static final String JWT_SETTINGS = "app.security.jwt";
+        public static final String REDIS_REFRESH_TOKENS = "redis.refresh-tokens";
     }
 
     public static final class DatabaseInitializationSettings {

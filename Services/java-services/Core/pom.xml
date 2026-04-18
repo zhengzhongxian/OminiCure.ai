@@ -34,6 +34,7 @@
     <modules>
         <module>CoreShared</module>
         <module>CoreDomain</module>
+        <module>CoreApplication</module>
         <module>CoreInfra</module>
         <module>CoreWebShared</module>
     </modules>
@@ -59,6 +60,11 @@
             <dependency>
                 <groupId>ai.omnicure</groupId>
                 <artifactId>core-shared</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>ai.omnicure</groupId>
+                <artifactId>core-application</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <!-- Force secure versions of vulnerable dependencies -->

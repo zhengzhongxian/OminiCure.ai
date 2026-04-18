@@ -1,13 +1,10 @@
-version: '3.8'
-
 name: omnicure-iam
 
 services:
-  # IAM Service
   iam-service:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: IAMService/Dockerfile
       args:
         BUILD_PROFILE: ${BUILD_PROFILE:-production}
     container_name: omnicure-iam-service
@@ -16,11 +13,6 @@ services:
       - "${IAM_SERVICE_HEALTH_PORT}:8081"
     environment:
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
-    depends_on:
-      - postgres-write
-      - postgres-read
-      - redis
-      - rabbitmq
     networks:
       - omnicure-network
     restart: unless-stopped

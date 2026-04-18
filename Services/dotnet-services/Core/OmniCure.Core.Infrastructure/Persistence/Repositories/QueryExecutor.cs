@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using OmniCure.Core.Domain.Interfaces.Persistence;
+using OmniCure.Core.Application.Common.Interfaces.Persistence;
 using OmniCure.Core.Shared.Pagination;
 
 namespace OmniCure.Core.Infrastructure.Persistence.Repositories;

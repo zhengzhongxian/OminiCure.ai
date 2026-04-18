@@ -1,13 +1,10 @@
-version: '3.8'
-
 name: omnicure-patient
 
 services:
-  # Patient Service
   patient-service:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: PatientService/Dockerfile
       args:
         BUILD_PROFILE: ${BUILD_PROFILE:-production}
     container_name: omnicure-patient-service
@@ -16,11 +13,6 @@ services:
       - "${PATIENT_SERVICE_HEALTH_PORT}:8081"
     environment:
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
-    depends_on:
-      - mongo1
-      - mongo2
-      - redis
-      - rabbitmq
     networks:
       - omnicure-network
     restart: unless-stopped

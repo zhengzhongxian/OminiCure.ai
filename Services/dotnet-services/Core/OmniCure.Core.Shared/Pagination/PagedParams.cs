@@ -19,7 +19,7 @@ public class PagedParams
 
     public string? SearchKeyword { get; set; }
 
-    public string? SortBy { get; set; }
+    public string? SortBy { get; set; } = default!;
 
     public string? SortDirection { get; set; } = "asc";
 }

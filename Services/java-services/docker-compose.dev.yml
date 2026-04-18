@@ -1,0 +1,44 @@
+name: omnicure-java-dev
+
+services:
+  iam-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: iam-service
+    container_name: omnicure-iam-service-dev
+    ports:
+      - "5000:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+    networks:
+      - omnicure-network-dev
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  patient-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: patient-service
+    container_name: omnicure-patient-service-dev
+    ports:
+      - "5007:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+    networks:
+      - omnicure-network-dev
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  omnicure-network-dev:
+    external: true

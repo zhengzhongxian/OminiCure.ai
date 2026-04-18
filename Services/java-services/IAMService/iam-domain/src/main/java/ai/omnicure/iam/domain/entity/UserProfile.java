@@ -1,7 +1,7 @@
 package ai.omnicure.iam.domain.entity;
 
 import ai.omnicure.core.domain.entity.BaseEntity;
-
+import ai.omnicure.iam.domain.enums.Gender;
 
 import jakarta.persistence.*;
 
@@ -36,8 +36,9 @@ public class UserProfile extends BaseEntity {
     @Column(name = "full_name", length = 200)
     private String fullName;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "gender", length = 20)
-    private String gender;
+    private Gender gender;
 
     @Column(name = "dob")
     private LocalDate dob;

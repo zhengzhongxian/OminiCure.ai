@@ -1,8 +1,7 @@
 package ai.omnicure.iam.domain.entity;
 
+import ai.omnicure.iam.domain.enums.DeviceType;
 import jakarta.persistence.*;
-
-
 
 import lombok.Getter;
 import lombok.Setter;
@@ -28,8 +27,9 @@ public class UserDevice {
     @Column(name = "device_name", length = 200)
     private String deviceName;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "device_type", length = 50)
-    private String deviceType;
+    private DeviceType deviceType;
 
     @Column(name = "browser_fingerprint", length = 255)
     private String browserFingerprint;

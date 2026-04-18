@@ -2,8 +2,6 @@ version: '3.8'
 
 name: omnicore-core-dev
 
-# Core is a shared library, not a standalone service.
-# This file is kept for reference but should not be run independently.
 
 services:
   core-library-dev:

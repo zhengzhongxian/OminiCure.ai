@@ -24,7 +24,7 @@ import java.util.Map;
 @EnableJpaRepositories(
         entityManagerFactoryRef = KeyConstants.ConnectionStrings.WRITE_ENTITY_MANAGER_FACTORY,
         transactionManagerRef = KeyConstants.ConnectionStrings.WRITE_TRANSACTION_MANAGER,
-        basePackages = {"ai.omnicure.**.repository.write"}
+        basePackages = {"ai.omnicure"}
 )
 public class WriteDbConfig {
 
@@ -54,7 +54,7 @@ public class WriteDbConfig {
 
         return builder
                 .dataSource(writeDataSource)
-                .packages("ai.omnicure.**.domain.entity")
+                .packages("ai.omnicure")
                 .persistenceUnit(KeyConstants.ConnectionStrings.WRITE_ENTITY_MANAGER_FACTORY)
                 .properties(jpaProperties)
                 .build();

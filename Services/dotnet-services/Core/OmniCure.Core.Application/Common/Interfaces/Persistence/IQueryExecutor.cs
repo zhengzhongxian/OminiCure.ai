@@ -1,6 +1,6 @@
 using OmniCure.Core.Shared.Pagination;
 
-namespace OmniCure.Core.Domain.Interfaces.Persistence;
+namespace OmniCure.Core.Application.Common.Interfaces.Persistence;
 
 public interface IQueryExecutor
 {

@@ -1,6 +1,6 @@
 package ai.omnicure.core.infra.repository;
 
-import ai.omnicure.core.domain.repository.IQueryExecutor;
+import ai.omnicure.core.application.repository.IQueryExecutor;
 import ai.omnicure.core.shared.pagination.PagedList;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
